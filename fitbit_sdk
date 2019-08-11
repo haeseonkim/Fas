@@ -1,0 +1,212 @@
+import { Accelerometer } from "accelerometer";
+//import {name} from "모듈"
+import { Barometer } from "barometer";
+import { BodyPresenceSensor } from "body-presence";
+import { display } from "display";
+import document from "document";
+import { Gyroscope } from "gyroscope";
+import { HeartRateSensor } from "heart-rate";
+import { OrientationSensor } from "orientation";
+
+
+//맞는진 모르겠으나 그냥 해놓음
+import { Test } from "accelerometer";
+import { Test } from "gyroscope";
+
+
+const accelLabel = document.getElementById("accel-label");
+const accelData = document.getElementById("accel-data");
+
+const gyroLabel = document.getElementById("gyro-label");
+const gyroData = document.getElementById("gyro-data");
+
+const testLabel = document.getElementById("test-label");
+const testData = document.getElementById("test-data");
+
+/*
+
+const barLabel = document.getElementById("bar-label");
+const barData = document.getElementById("bar-data");
+
+const bpsLabel = document.getElementById("bps-label");
+const bpsData = document.getElementById("bps-data");
+
+
+const hrmLabel = document.getElementById("hrm-label");
+const hrmData = document.getElementById("hrm-data");
+
+const orientationLabel = document.getElementById("orientation-label");
+const orientationData = document.getElementById("orientation-data");
+
+*/
+
+const sensors = [];
+const cetaArr = [];
+
+
+
+//가속도
+if (Accelerometer) {     
+    
+  //1초마다 import해서 받아오는 
+  //x,y,z값을 가진Accelerometer를 하나의 객체로 정의
+  const accel = new Accelerometer({ frequency: 1 });//default 값으로 1초당 100번의 가속도 데이터를 얻게 된다. 
+  
+  var accsvm = Math.sqrt( Math.pow(accel.x , 2) + Math.pow(accel.y , 2) + Math.pow(accel.z , 2));
+  var base = Math.sqrt( Math.pow(accel.x , 2) + Math.pow(accel.z , 2) ); 
+  var ceta = Math.atan( base / accel.x ) * 180/Math.pi; //ceta역시 배열로 표현되어야 저걸 더할 수 있는데....
+
+  
+  //아래의 "addEventListener"함수는 {"x":0,"y":0,"z":0}과 같은 꼴로 출력되게 하는 함수로 보임
+  accel.addEventListener("reading", () => {
+    accelData.text = JSON.stringify({//json 객체를 string 객체로 변환 시켜줌.
+      x: accel.x ? accel.x.toFixed(1) : 0, //toixed : 소수점 자리수 지정
+      y: accel.y ? accel.y.toFixed(1) : 0,
+      z: accel.z ? accel.z.toFixed(1) : 0,
+      
+    });
+  });
+
+  sensors.push(accel); //센서에서 값을 들여옴 //센서라는 배열에 accel의 값을 차례로 넣는 방식 
+  accel.start();  //화면에 출력
+} 
+else {
+  accelLabel.style.display = "none";
+  accelData.style.display = "none";
+}
+//가속도 끝
+//비동기식으로 실행되는 프로그램  :  한꺼번에 여러 함수들이 실행되어지고 있는 코드문 
+
+
+
+
+//각속도
+if (Gyroscope) {
+  const gyro = new Gyroscope({ frequency: 1 });
+
+  //"functionTest()"에 쓰일 변수 정의
+  var avsvm = Math.sqrt( Math.pow(gyro.x , 2) + Math.pow(gyro.y , 2) );
+
+  gyro.addEventListener("reading", () => {
+    gyroData.text = JSON.stringify({ 
+      x: gyro.x ? gyro.x.toFixed(1) : 0,
+      y: gyro.y ? gyro.y.toFixed(1) : 0,
+      z: gyro.z ? gyro.z.toFixed(1) : 0,
+      
+    });
+  });
+  sensors.push(gyro);
+  gyro.start();
+} 
+else {
+  gyroLabel.style.display = "none";
+  gyroData.style.display = "none";
+}
+//각속도 끝
+
+
+
+if(Accelerometer){
+  if(Gyroscope){
+    !function mAngle()
+    {
+      var value;
+      for(var i=0; i<100;i++ ) //sample 개수는 30에서 100이내로 정한다. 하지만 우리는 30으로 일단 한다.
+        {
+          value+=ceta[i];
+          //document.write(ceta[i]);
+        }
+       return value/100; //샘플 개수를 30으로 하였으므로 30으로 나눈다.
+    }();
+      setTimeout(mAngle(), 1000); //30초 뒤에 실행하는 함수  mAngle을 실행한다.
+
+  }
+}
+  
+
+
+//함수만들기
+// var fall=function fall(){
+// if(avsvm>170)
+//   {
+//     if(accsvm>2)
+//   }
+   
+// }
+// else{
+//   testLabel.style.display = "none";
+//   testData.style.display = "none";
+// }
+// }
+
+//함수만들기 끝
+
+
+
+
+
+/*
+
+if (Barometer) {
+  const barometer = new Barometer({ frequency: 1 });
+  barometer.addEventListener("reading", () => {
+    barData.text = JSON.stringify({
+      pressure: barometer.pressure ? parseInt(barometer.pressure) : 0
+    });
+  });
+  sensors.push(barometer);
+  barometer.start();
+} else {
+  barLabel.style.display = "none";
+  barData.style.display = "none";
+}
+
+if (BodyPresenceSensor) {
+  const bps = new BodyPresenceSensor();
+  bps.addEventListener("reading", () => {
+    bpsData.text = JSON.stringify({
+      presence: bps.present
+    })
+  });
+  sensors.push(bps);
+  bps.start();
+} else {
+  bpsLabel.style.display = "none";
+  bpsData.style.display = "none";
+}
+
+
+if (HeartRateSensor) {
+  const hrm = new HeartRateSensor({ frequency: 1 });
+  hrm.addEventListener("reading", () => {
+    hrmData.text = JSON.stringify({
+      heartRate: hrm.heartRate ? hrm.heartRate : 0
+    });
+  });
+  sensors.push(hrm);
+  hrm.start();
+} else {
+  hrmLabel.style.display = "none";
+  hrmData.style.display = "none";
+}
+
+if (OrientationSensor) {
+  const orientation = new OrientationSensor({ frequency: 60 });
+  orientation.addEventListener("reading", () => {
+    orientationData.text = JSON.stringify({
+      quaternion: orientation.quaternion ? orientation.quaternion.map(n => n.toFixed(1)) : null
+    });
+  });
+  sensors.push(orientation);
+  orientation.start();
+} else {
+  orientationLabel.style.display = "none";
+  orientationData.style.display = "none";
+}
+
+display.addEventListener("change", () => {
+  // Automatically stop all sensors when the screen is off to conserve battery
+  display.on ? sensors.map(sensor => sensor.start()) : sensors.map(sensor => sensor.stop());
+});
+
+*/
